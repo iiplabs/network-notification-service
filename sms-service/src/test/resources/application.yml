@@ -1,0 +1,41 @@
+server:
+  port: 9091
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MODE=MYSQL
+    username: sa
+    password: sa
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        hbm2ddl:
+          auto: create
+
+  cache:
+    jcache:
+      config: classpath:ehcache-test.xml
+
+bucket4j:
+  enabled: true
+  filters:
+  - cache-name: buckets
+    filter-order: 1
+    url: .*
+    http-response-body: '{ "status": 429, "error": "Too Many Requests", "message": "Too Many Requests" }'
+    rate-limits:
+    - expression: "getHeader('X-sms-service-api-key')"
+      execute-condition: "getHeader('X-sms-service-api-key').startsWith('rate-limiter-test-')"
+      bandwidths:
+      - capacity: 5
+        time: 1
+        unit: minutes
+    - expression: "getHeader('X-sms-service-api-key')"
+      execute-condition: "getHeader('X-sms-service-api-key').startsWith('regular-test-')"
+      bandwidths:
+      - capacity: 100000
+        time: 1
+        unit: seconds

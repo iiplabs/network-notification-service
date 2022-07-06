@@ -1,0 +1,26 @@
+debug: false
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+  max-http-header-size: 8KB
+  port: ${SMS_SERVER_PORT}
+
+spring:
+  cache:
+    jcache:
+      config: classpath:ehcache.xml
+
+bucket4j:
+  enabled: true
+  filters:
+  - cache-name: rate-limit-buckets
+    filter-order: 1
+    url: .*
+    http-response-body: '{ "status": 429, "error": "Too Many Requests", "message": "Too Many Requests" }'
+    rate-limits:
+    - bandwidths:
+      - capacity: 300
+        time: 1
+        unit: seconds
