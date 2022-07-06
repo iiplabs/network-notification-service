@@ -10,7 +10,8 @@ Example of the request body:
 
 {
   "text": "Этот абонент снова в сети",
-  "msisdnB": "79031112233", "msisdnA": "79063332211"
+  "msisdnB": "79031112233", 
+  "msisdnA": "79063332211"
 }
 
 The service waits for any time up to 5 seconds to simulate a slow service and responds with HTTP status 200 and the following body when there are no issues.
@@ -27,13 +28,26 @@ The service throttles the number of incoming HTTP requests to 300 per second. Wh
   "message": "Too Many Requests"
 }
 
-### Connect to logs of Spring Boot backend
+The body of the incoming request shall be validated using the following rules.
+
+1. Fields "msisdnA" and "msisdnB" (phone numbers) shall be present, with 11 digits.
+2. Field "text" shall be present and have the length from 1 to 100 characters.
+
+If the incoming request is found as not valid, the service responds with HTTP status 400 and the following example body.
+
+{
+  "errors": {
+    "destinationPhone": "Incorrect msisdnA"
+  }
+}
+
+### Connect to the service logs
 
 ```bash
 docker logs --tail 50 --follow --timestamps sms-service
 ```
 
-## Testing
+### Testing
 
 ```bash
 mvn test
