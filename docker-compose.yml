@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  mysql:
+    container_name: nns-core-db
+    image: mysql/mysql-server:8.0.29
+    command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1
+    restart: always
+    volumes:
+      - nns-data:/var/lib/mysql
+      - ./docker/db/scripts/backend:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NNS_CORE_SQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${NNS_CORE_SQL_DATABASE}
+      MYSQL_USER: ${NNS_CORE_SQL_USER}
+      MYSQL_PASSWORD: ${NNS_CORE_SQL_PASSWORD}
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '${NNS_CORE_MYSQL_PORT}:3306'
+
+  nns-core:
+    build:
+      context: ./nns-core/
+    image: nns-core:latest
+    container_name: nns-core
+    restart: always
+    ports:
+      - '${NNS_CORE_SERVER_PORT}:${NNS_CORE_SERVER_PORT}'
+    environment: 
+      NNS_CORE_SERVER_PORT: ${NNS_CORE_SERVER_PORT}
+      NNS_CORE_DB_URL: ${NNS_CORE_DB_URL}
+      NNS_CORE_SQL_USER: ${NNS_CORE_SQL_USER}
+      NNS_CORE_SQL_PASSWORD: ${NNS_CORE_SQL_PASSWORD}
+    depends_on:
+      - mysql
+
+  ping-service:
+    build:
+      context: ./ping-service/
+    image: ping-service:latest
+    container_name: ping-service
+    restart: always
+    ports:
+      - '${PING_SERVER_PORT}:${PING_SERVER_PORT}'
+    environment: 
+      SMS_SERVER_PORT: ${PING_SERVER_PORT}
+
+  sms-service:
+    build:
+      context: ./sms-service/
+    image: sms-service:latest
+    container_name: sms-service
+    restart: always
+    ports:
+      - '${SMS_SERVER_PORT}:${SMS_SERVER_PORT}'
+    environment: 
+      SMS_SERVER_PORT: ${SMS_SERVER_PORT}
+
+volumes:
+  nns-data:
