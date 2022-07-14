@@ -16,6 +16,6 @@ public class UnavailabeSubscriberResponseDto {
 
     Map<String, String> errors;
 
-    private UnavailableSubscriberStatus status = UnavailableSubscriberStatus.OK;
+    UnavailableSubscriberStatus status = UnavailableSubscriberStatus.OK;
 
 }
