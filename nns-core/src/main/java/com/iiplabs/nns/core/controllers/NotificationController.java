@@ -9,6 +9,7 @@ import com.iiplabs.nns.core.services.INotificationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ public class NotificationController {
   @Autowired
   private INotificationService notificationService;
 
+  @PreAuthorize("permitAll()")
   @PostMapping("/unavailableSubscriber")
   public ResponseEntity<UnavailabeSubscriberResponseDto> unavailableSubscriber(
       @Valid @RequestBody UnavailabeSubscriberRequestDto unavailabeSubscriberRequestDto) {

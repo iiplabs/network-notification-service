@@ -43,7 +43,7 @@ public class NotificationControllerTest {
   final private String testJsonUnavailabeSubscriberRequestDto = "{\"msisdnA\":\"79063332211\",\"msisdnB\":\"79031112233\"}";
   final private String testJsonUnavailabeSubscriberRequestDtoEmptyPhone = "{\"msisdnB\":\"79031112233\",\"msisdnA\":\"\"}";
   final private String testJsonUnavailabeSubscriberRequestDtoNoDestPhoneField = "{\"msisdnB\":\"79031112233\"}";
-  
+
   final private String NOTIFY_SUBSCRIBER_END_POINT = "/api/v1/unavailableSubscriber";
 
   @BeforeAll
@@ -68,7 +68,7 @@ public class NotificationControllerTest {
         .content(testJsonUnavailabeSubscriberRequestDto)
         .header("X-nns-core-api-key", "regular-test-1"))
         .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(jsonPath("$.status", any(String.class)))
         .andDo(print());
   }
@@ -99,16 +99,18 @@ public class NotificationControllerTest {
 
   @Test
   public void serializationTest() throws IOException {
-    UnavailabeSubscriberRequestDto unavailabeSubscriberRequestDto = objectMapper.readValue(testJsonUnavailabeSubscriberRequestDto,
-    UnavailabeSubscriberRequestDto.class);
+    UnavailabeSubscriberRequestDto unavailabeSubscriberRequestDto = objectMapper.readValue(
+        testJsonUnavailabeSubscriberRequestDto,
+        UnavailabeSubscriberRequestDto.class);
     final String serializedPaymentDtoAsJson = objectMapper.writeValueAsString(unavailabeSubscriberRequestDto);
     assertEquals(serializedPaymentDtoAsJson, testJsonUnavailabeSubscriberRequestDto);
   }
 
   @Test
   public void deserializationTest() throws IOException {
-    UnavailabeSubscriberRequestDto deserializedSendMessageRequestDto = objectMapper.readValue(testJsonUnavailabeSubscriberRequestDto,
-    UnavailabeSubscriberRequestDto.class);
+    UnavailabeSubscriberRequestDto deserializedSendMessageRequestDto = objectMapper.readValue(
+        testJsonUnavailabeSubscriberRequestDto,
+        UnavailabeSubscriberRequestDto.class);
     UnavailabeSubscriberRequestDto sendMessageRequestDto = getUnavailabeSubscriberRequestDto();
     assertEquals(deserializedSendMessageRequestDto, sendMessageRequestDto);
   }

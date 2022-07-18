@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UnavailabeSubscriberResponseDto {
 
-    Map<String, String> errors;
+    private Map<String, String> errors;
 
-    UnavailableSubscriberStatus status = UnavailableSubscriberStatus.OK;
+    private UnavailableSubscriberStatus status = UnavailableSubscriberStatus.OK;
 
 }

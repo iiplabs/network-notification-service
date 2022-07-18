@@ -1,11 +1,11 @@
-package com.iiplabs.nns.core.clients.sms.dto;
+package com.iiplabs.nns.core.clients.sms.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
-public class SmsClientResponseDto {
+public class SmsClientResponse {
     
     private SendMessageStatus status;
 

@@ -53,7 +53,7 @@ public class RateLimiterTest {
           .header("X-nns-core-api-key", "rate-limiter-test-1"))
           .andExpect(status().isOk())
           .andExpect(header().longValue("X-Rate-Limit-Remaining", remainingTries))
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(jsonPath("$.status", any(String.class)));
     } catch (Exception e) {
       e.printStackTrace();

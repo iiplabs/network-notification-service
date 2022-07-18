@@ -25,7 +25,7 @@ public class Notification extends BaseModel {
 
 	@EqualsAndHashCode.Include
 	@JsonProperty("msisdnA")
-	@Column(name = "dest_phone")
+	@Column(name = "destination_phone")
 	private String destinationPhone;
 
 	@EqualsAndHashCode.Include
@@ -34,19 +34,7 @@ public class Notification extends BaseModel {
 	private String sourcePhone;
 
 	@EqualsAndHashCode.Include
-	@Column(name = "completion_date")
-	private LocalDateTime completionDate;
-
-	@EqualsAndHashCode.Include
 	@Column(name = "expiry_date")
 	private LocalDateTime expiryDate;
-
-	@EqualsAndHashCode.Include
-	@Column(name = "next_attempt_date")
-	private LocalDateTime nextAttemptDate;
-
-	@EqualsAndHashCode.Include
-	@Column(name = "notification_status")
-	private NotificationStatus notificationStatus;
 
 }

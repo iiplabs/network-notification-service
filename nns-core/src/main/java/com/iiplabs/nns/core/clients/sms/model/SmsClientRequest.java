@@ -1,4 +1,4 @@
-package com.iiplabs.nns.core.clients.sms.dto;
+package com.iiplabs.nns.core.clients.sms.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class SmsClientRequestDto {
+public class SmsClientRequest {
     
     @JsonProperty("msisdnB")
     private String sourcePhone;

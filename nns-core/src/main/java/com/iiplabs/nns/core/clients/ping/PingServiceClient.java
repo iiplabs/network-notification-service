@@ -1,37 +1,79 @@
 package com.iiplabs.nns.core.clients.ping;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.iiplabs.nns.core.clients.ping.dto.PingClientResponseDto;
+import com.iiplabs.nns.core.clients.ping.model.PingClientResponse;
+import com.iiplabs.nns.core.clients.ping.model.PingStatus;
+import com.iiplabs.nns.core.exceptions.NotificationServiceException;
 
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
+import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 
+@Log4j2
 @Component
 public class PingServiceClient implements IPingServiceClient {
 
-    private final static long DEFAULT_TIMEOUT = 30;
+    private final WebClient webClient;
 
     @Value("${ping.url}")
-    private String serviceEndpoint;
+    private String pingServiceEndpoint;
+
+    @Value("${ping.error.repeat.interval.seconds}")
+    private long pingServiceRepeatIntervalSeconds;
+
+    private static final long DEFAULT_TIMEOUT_SECONDS = 15;
+
+    public PingServiceClient(WebClient.Builder webClientBuilder) {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) DEFAULT_TIMEOUT_SECONDS * 1000)
+                .responseTimeout(Duration.ofSeconds(DEFAULT_TIMEOUT_SECONDS))
+                .doOnConnected(
+                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+                                .addHandlerLast(new WriteTimeoutHandler(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
+
+        this.webClient = webClientBuilder
+                .baseUrl(pingServiceEndpoint)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
+    }
 
     @Override
-    public PingClientResponseDto send(String authToken, String sourcePhone) {
-        WebClient client = WebClient.builder()
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
-        return client.get()
-                .uri(uriBuilder -> uriBuilder.path(serviceEndpoint).queryParam("msisdn", sourcePhone).build())
+    public Mono<PingClientResponse> send(String authToken, String sourcePhone, long maxAttempts) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder.queryParam("msisdn", sourcePhone).build())
                 .headers(h -> h.setBearerAuth(authToken))
                 .retrieve()
-                .bodyToMono(PingClientResponseDto.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(100)))
-                .block(Duration.ofSeconds(DEFAULT_TIMEOUT));
+                .bodyToMono(PingClientResponse.class)
+                .doOnError(error -> log.error("Problem locating subscriber: {}", error.getMessage()))
+                .onErrorResume(error -> Mono.just(new PingClientResponse(PingStatus.UNAVAILABLE_SUBSCRIBER)))
+                .map(result -> {
+                    if (result.getStatus() == null || PingStatus.UNAVAILABLE_SUBSCRIBER.equals(result.getStatus())) {
+                        throw new NotificationServiceException(sourcePhone, HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    }
+                    return result;
+                })
+                .retryWhen(Retry.fixedDelay(maxAttempts, Duration.ofSeconds(pingServiceRepeatIntervalSeconds))
+                        .filter(throwable -> throwable instanceof NotificationServiceException)
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
+                            throw new NotificationServiceException(
+                                    "Exhausted max retries to locate subscriber",
+                                    HttpStatus.SERVICE_UNAVAILABLE.value());
+                        }));
     }
 
 }
