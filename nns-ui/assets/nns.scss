@@ -1,0 +1,32 @@
+$nnsNameSpace: 'nns' !default;
+
+.#{$nnsNameSpace}-spacer {
+  flex: 1 1 auto;
+}
+
+.#{$nnsNameSpace}-lang {
+  display: flex;
+  flex-direction: row;
+  border-left: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+  padding: 0 0.5rem;
+  align-items: center;
+  max-height: 1.25rem;
+}
+.#{$nnsNameSpace}-lang-selector {
+  font-size: 12px;
+  font-weight: 200;
+  text-decoration: none;
+  color: black;
+}
+.#{$nnsNameSpace}-lang-spacer {
+  margin: 0 0.5rem;
+}
+
+.v-data-table table {
+    overflow-x: hidden;
+}
+
+.smalltitle-title {
+  color: rgba(0, 0, 0, 0.6)
+}

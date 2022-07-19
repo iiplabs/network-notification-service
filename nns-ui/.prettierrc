@@ -1,0 +1,9 @@
+{
+  "trailingComma": "none",
+  "semi": false,
+  "arrowParents": "avoid",
+  "singleQuote": true,
+  "endOfLine": "auto",
+  "tabWidth": 2,
+  "eslintIntegration": true
+}
