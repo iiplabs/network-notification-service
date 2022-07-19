@@ -8,8 +8,9 @@ CREATE TABLE notifications (
   destination_phone varchar(11) NOT NULL,
   /* msisdnB */
   source_phone varchar(11) NOT NULL,
-  expiry_date datetime,
-  web_id varchar(50),
+  expiry_date datetime NOT NULL,
+  web_id varchar(50) NOT NULL,
+  web_socket_id varchar(50),
   created datetime,
   updated datetime,
   created_by varchar(50),
