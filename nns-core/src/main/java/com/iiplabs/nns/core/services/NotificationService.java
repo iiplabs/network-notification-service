@@ -4,8 +4,12 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.AsyncEventBus;
 import com.iiplabs.nns.core.clients.ping.IPingServiceClient;
 import com.iiplabs.nns.core.clients.sms.ISmsServiceClient;
@@ -41,6 +45,12 @@ public class NotificationService implements INotificationService {
   @Autowired
   private AsyncEventBus eventBus;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private SimpMessagingTemplate simpMessagingTemplate;
+
   @Override
   @Transactional
   public Notification create(UnavailabeSubscriberRequestDto unavailabeSubscriberRequestDto) {
@@ -49,9 +59,16 @@ public class NotificationService implements INotificationService {
 
     log.info("New subscriber notification request created with webId {}", notification.getWebId());
 
+    try {
+      simpMessagingTemplate.convertAndSend("/topic/api/v1/messages", objectMapper.writeValueAsString(notification));
+    } catch (MessagingException | JsonProcessingException e) {
+      log.error("Error posting to Web Sockets");
+    }
+
     // submit request to locate subscriber within the network
-    eventBus.post(
-        new NotifyEvent(notification.getWebId(), notification.getSourcePhone(), notification.getDestinationPhone()));
+    // eventBus.post(
+    // new NotifyEvent(notification.getWebId(), notification.getSourcePhone(),
+    // notification.getDestinationPhone()));
 
     return notification;
   }

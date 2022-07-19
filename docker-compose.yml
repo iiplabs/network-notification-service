@@ -31,6 +31,7 @@ services:
       NNS_CORE_DB_URL: ${NNS_CORE_DB_URL}
       NNS_CORE_SQL_USER: ${NNS_CORE_SQL_USER}
       NNS_CORE_SQL_PASSWORD: ${NNS_CORE_SQL_PASSWORD}
+      NOTIFICATION_EXPIRY_WINDOW_HOURS: ${NOTIFICATION_EXPIRY_WINDOW_HOURS}
       PING_ERROR_REPEAT_INTERVAL_SECONDS: ${PING_ERROR_REPEAT_INTERVAL_SECONDS}
       PING_URL: ${PING_URL}
       SMS_SEND_WINDOW: ${SMS_SEND_WINDOW}
@@ -49,7 +50,7 @@ services:
     ports:
       - '${PING_SERVER_PORT}:${PING_SERVER_PORT}'
     environment: 
-      SMS_SERVER_PORT: ${PING_SERVER_PORT}
+      PING_SERVER_PORT: ${PING_SERVER_PORT}
 
   sms-service:
     build:
@@ -61,6 +62,31 @@ services:
       - '${SMS_SERVER_PORT}:${SMS_SERVER_PORT}'
     environment: 
       SMS_SERVER_PORT: ${SMS_SERVER_PORT}
+
+  nns-ui:
+    build:
+      context: ./nns-ui/
+    image: nns-ui:latest
+    container_name: nns-ui
+    restart: always
+    ports:
+      - "3000:3000"
+    environment: 
+      UI_API_URL: ${UI_API_URL}
+      UI_SOCKET_URL: ${UI_SOCKET_URL}
+    command:
+      "npm run start"
+
+  nns-nginx:
+    image: arm64v8/nginx:latest
+    container_name: nns-nginx
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - nns-ui
 
 volumes:
   nns-data:

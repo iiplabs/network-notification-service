@@ -2,6 +2,9 @@ package com.iiplabs.nns.ping.services;
 
 import java.util.Random;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class StatusDecisionService implements IStatusDecisionService {
 
   /**

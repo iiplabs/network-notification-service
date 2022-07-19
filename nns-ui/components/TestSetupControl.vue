@@ -19,8 +19,9 @@
           suffix="ms" class="ml-sm-8 TestSetupControl-Delay"></v-text-field>
       </div>
 
-      <v-btn :small="$vuetify.breakpoint.xsOnly" color="primary" outlined :disabled="sliderVal === 0 || showProgress"
-        :loading="showProgress" class="mx-auto" @click="enterValue">
+      <v-btn :small="$vuetify.breakpoint.xsOnly" color="primary" outlined
+        :disabled="sliderVal === 0 || showProgress || !socketConnected" :loading="showProgress" class="mx-auto"
+        @click="enterValue">
         {{ $t('tests_setup.button') }}
         <template #loader>
           <span class="cmac-loader">
@@ -74,6 +75,16 @@ export default {
   computed: {
     sequential() {
       return this.strategy === 'SEQ'
+    },
+
+    socketConnected() {
+      let connected = false
+      const { socketInfo } = this
+      if (socketInfo) {
+        const { status } = socketInfo
+        connected = status && status === 'CONNECTED'
+      }
+      return connected
     }
   },
 
@@ -84,7 +95,7 @@ export default {
         testsNumber: sliderVal,
         strategy,
         delay
-      });
+      })
     }
   }
 }

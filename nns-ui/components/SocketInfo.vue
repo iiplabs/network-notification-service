@@ -1,8 +1,7 @@
 <template>
-    <div class="d-flex flex-row align-center">
-        <v-icon v-if="connected" color="green" dense class="mx-2">mdi-antenna</v-icon>
-        <v-icon v-else color="red" dense class="mx-2">mdi-antenna</v-icon>
-        <div>id: {{ userId }}</div>
+    <div>
+        <v-icon v-if="connected" v-bind="size" color="green">mdi-antenna</v-icon>
+        <v-icon v-else v-bind="size" color="red">mdi-antenna</v-icon>
     </div>
 </template>
 
@@ -18,14 +17,16 @@ export default {
     },
 
     computed: {
-        userId() {
-            const { userId } = this.info
-            return userId
-        },
-
         connected() {
             const { status } = this.info
             return status && status === 'CONNECTED'
+        },
+
+        size() {
+            const size = { xs: 'x-small', sm: 'small', md: 'dense', lg: 'large', xl: 'x-large' }[
+                this.$vuetify.breakpoint.name
+            ]
+            return size ? { [size]: true } : {}
         }
     }
 }

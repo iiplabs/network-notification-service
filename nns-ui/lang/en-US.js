@@ -26,6 +26,12 @@ export default (context) => {
 
       notification_requests_view: {
         title: 'Notifications Requests',
+        item: {
+          webId: 'Web Id:',
+          sourcePhone: 'Source Phone (msisdnB):',
+          destinationPhone: 'Destination Phone (msisdnA):',
+          status: 'POST status:'
+        }
       },
 
       notifications_view: {

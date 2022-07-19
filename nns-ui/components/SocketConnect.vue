@@ -29,14 +29,17 @@ export default {
 
     methods: {
         socketConnect() {
-            const { userId } = this.socketInfo
-            const url = `${this.$config.socketUrl}/messages/${userId}`
-            console.log(`connecting Web Socket to ${url}`)
+            const url = `${this.$config.socketUrl}`
+            console.log(`Connecting Web Socket to ${url}`)
 
             const socket = new WebSocket(url);
 
             socket.onopen = () => {
                 console.log("Web Socket connected");
+
+                this.socketInfo = { ...this.socketInfo, status: 'CONNECTED' }
+                this.$root.$emit('onSocketInfoUpdated', this.socketInfo)
+
                 this.keepAliveId = setInterval(() => {
                     const messageType = 'keep_alive'
                     const { userId } = this.socketInfo

@@ -1,6 +1,6 @@
 <template>
     <div class="NotificationsItem">
-        {{ webId }} / {{ sourcePhone }} / {{ destinationPhone }}
+        {{ webId }} / {{ msisdnB }} / {{ msisdnA }}
     </div>
 </template>
 
@@ -20,13 +20,13 @@ export default {
             const { webId } = this.item
             return webId
         },
-        sourcePhone() {
-            const { sourcePhone } = this.item
-            return sourcePhone
+        msisdnB() {
+            const { msisdnB } = this.item
+            return msisdnB
         },
-        destinationPhone() {
-            const { destinationPhone } = this.item
-            return destinationPhone
+        msisdnA() {
+            const { msisdnA } = this.item
+            return msisdnA
         },
     }
 }

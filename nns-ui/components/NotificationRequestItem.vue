@@ -2,19 +2,19 @@
     <div class="NotificationRequestItem ma-2">
         <div class="d-flex flex-column">
             <div class="d-flex flex-row">
-                <div>Web Id:</div>
+                <div>{{ $t('notification_requests_view.item.webId') }}</div>
                 <div class="mx-2">{{ webId }}</div>
             </div>
             <div class="d-flex flex-row">
-                <div>Source Phone:</div>
-                <div class="mx-2">{{ sourcePhone }}</div>
+                <div>{{ $t('notification_requests_view.item.sourcePhone') }}</div>
+                <div class="mx-2">{{ msisdnB }}</div>
             </div>
             <div class="d-flex flex-row">
-                <div>Destination Phone:</div>
-                <div class="mx-2">{{ destinationPhone }}</div>
+                <div>{{ $t('notification_requests_view.item.destinationPhone') }}</div>
+                <div class="mx-2">{{ msisdnA }}</div>
             </div>
             <div class="d-flex flex-row">
-                <div>POST status:</div>
+                <div>{{ $t('notification_requests_view.item.status') }}</div>
                 <div class="mx-2">{{ status }}</div>
             </div>
         </div>
@@ -37,13 +37,13 @@ export default {
             const { webId } = this.item
             return webId
         },
-        sourcePhone() {
-            const { sourcePhone } = this.item
-            return sourcePhone
+        msisdnB() {
+            const { msisdnB } = this.item
+            return msisdnB
         },
-        destinationPhone() {
-            const { destinationPhone } = this.item
-            return destinationPhone
+        msisdnA() {
+            const { msisdnA } = this.item
+            return msisdnA
         },
         status() {
             const { status } = this.item

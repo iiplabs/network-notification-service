@@ -49,12 +49,12 @@ export default {
       const { testsNumber, strategy, delay } = o;
       for (let ii = 0; ii < testsNumber; ii++) {
         const webId = this.$newWebId()
-        const sourcePhone = this.getRandomPhone()
-        const destinationPhone = this.getRandomPhone()
+        const msisdnA = this.getRandomPhone()
+        const msisdnB = this.getRandomPhone()
         const n = {
           webId,
-          sourcePhone,
-          destinationPhone
+          msisdnA,
+          msisdnB
         };
         notificationRequests.push(n);
       }

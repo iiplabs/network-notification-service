@@ -16,8 +16,10 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
+		String origins[] = { "http://localhost:3000", "http://nns-ui", "http://nns-ui:3000" };
+
 		registry.addMapping("/api/**")
-				.allowedOrigins("http://nns-frontend:5000")
+				.allowedOrigins(origins)
 				.allowedMethods("GET", "POST", "HEAD", "OPTIONS")
 				.allowedHeaders("*")
 				.allowCredentials(true);
