@@ -22,6 +22,12 @@
 export default {
   name: "IndexPage",
 
+  head() {
+    return {
+      title: `${this.$t('title')}`
+    }
+  },
+
   data: () => ({
     progress: false,
     notifications: [],
@@ -76,15 +82,20 @@ export default {
       return webId.substring(webId.length - 11, webId.length)
     },
 
-    sendSimultaneously(requests) {
-      // transform into bunch of promises
-    },
-
     async sendSequentially(requests, delay) {
       for (const r of requests) {
-        await this.sendRequest(r)
+        const status = await this.sendRequest(r)
+        this.$root.$emit('onAddNotificationRequest', { ...r, status })
         await this.$sleep(delay)
       }
+    },
+
+    async sendSimultaneously(requests) {
+      // transform into bunch of promises
+      requests.map(async r => {
+        const status = await this.sendRequest(r)
+        this.$root.$emit('onAddNotificationRequest', { ...r, status })
+      })
     },
 
     async sendRequest(r) {
@@ -94,9 +105,7 @@ export default {
         .catch(e => {
           status = 'FAIL'
         })
-      const ret = { ...r, status }
-      this.$root.$emit('onAddNotificationRequest', ret)
-      return ret
+      return status
     }
   }
 }

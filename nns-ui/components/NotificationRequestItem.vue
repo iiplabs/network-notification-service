@@ -15,7 +15,14 @@
             </div>
             <div class="d-flex flex-row">
                 <div>{{ $t('notification_requests_view.item.status') }}</div>
-                <div class="mx-2">{{ status }}</div>
+                <div class="mx-2">
+                    <span v-if="statusOK" class="green--text text--darken-1">
+                        {{ status }}
+                    </span>
+                    <span v-else class="red--text text--darken-1">
+                        {{ status }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -49,6 +56,9 @@ export default {
             const { status } = this.item
             return status
         },
+        statusOK() {
+            return this.status === 'OK'
+        }
     }
 }
 </script>
