@@ -1,7 +1,14 @@
 package com.iiplabs.nns.core.services;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.MessagingException;
@@ -18,6 +25,7 @@ import com.iiplabs.nns.core.model.Notification;
 import com.iiplabs.nns.core.model.dto.UnavailabeSubscriberRequestDto;
 import com.iiplabs.nns.core.reps.INotificationRepository;
 import com.iiplabs.nns.core.utils.DaoFactory;
+import com.iiplabs.nns.core.utils.DateTimeUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -32,6 +40,12 @@ public class NotificationService implements INotificationService {
 
   @Value("${ping.error.repeat.interval.seconds}")
   private long pingErrorRepeatIntervalSeconds;
+
+  @Value("${sms.send.window}")
+  private String smsSendWindow;
+
+  @Value("${sms.text}")
+  private String textTemplate;
 
   @Autowired
   private INotificationRepository notificationsRepository;
@@ -60,15 +74,15 @@ public class NotificationService implements INotificationService {
     log.info("New subscriber notification request created with webId {}", notification.getWebId());
 
     try {
-      simpMessagingTemplate.convertAndSend("/topic/api/v1/messages", objectMapper.writeValueAsString(notification));
+      simpMessagingTemplate.convertAndSend("/topic/ws", objectMapper.writeValueAsString(notification));
     } catch (MessagingException | JsonProcessingException e) {
       log.error("Error posting to Web Sockets");
     }
 
     // submit request to locate subscriber within the network
-    // eventBus.post(
-    // new NotifyEvent(notification.getWebId(), notification.getSourcePhone(),
-    // notification.getDestinationPhone()));
+    eventBus.post(
+        new NotifyEvent(notification.getWebId(), notification.getSourcePhone(),
+            notification.getDestinationPhone()));
 
     return notification;
   }
@@ -82,14 +96,46 @@ public class NotificationService implements INotificationService {
     long maxAttempts = ((expiryWindowHours * 60 * 60) / pingErrorRepeatIntervalSeconds);
 
     pingServiceClient.send(null, sourcePhone, maxAttempts).subscribe(pingClientResponse -> {
-      log.info("Subscriber {} located. Sending SMS notification");
-      String text = "";
+      log.info("Subscriber {} located. Sending SMS notification", sourcePhone);
+      String text = getNotificationBody(textTemplate);
+      log.info("User message content: {}", text);
+
+      long durationSeconds = getDelayUntilNextSmsSendWindow();
+      if (durationSeconds > 0) {
+        log.info("Delaying SMS message for {}, until the next window {}",
+            DurationFormatUtils.formatDuration(durationSeconds * 1000, "HH'h' mm'm' ss's'", true), smsSendWindow);
+      }
+
+      // calc duration until tne next message window
       smsServiceClient.send(null, sourcePhone, destinationPhone, text, SMS_SERVICE_MAX_ATTEMPTS)
+          .delaySubscription(Duration.ofSeconds(durationSeconds))
           .subscribe(smsClientResponse -> {
             notificationsRepository.deleteByWebId(webId);
             log.info("Removed notification request webId {}", webId);
           });
     });
+  }
+
+  /**
+   * Replaces {$time} key with the current time
+   * @param template
+   * @return
+   */
+  private String getNotificationBody(String template) {
+    Map<String, String> values = new HashMap<>();
+    values.put("time", LocalDateTime.now().toString());
+
+    StringSubstitutor substitutor = new StringSubstitutor(values, "{$", "}");
+
+    return substitutor.replace(template);
+  }
+
+  /**
+   * 
+   * @return number of seconds to wait until the next window
+   */
+  private long getDelayUntilNextSmsSendWindow() {
+    return DateTimeUtil.getDelayUntilNextSmsSendWindow(smsSendWindow, LocalDateTime.now());
   }
 
 }
