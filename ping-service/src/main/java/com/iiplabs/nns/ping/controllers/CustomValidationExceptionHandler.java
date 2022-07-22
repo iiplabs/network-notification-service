@@ -60,7 +60,7 @@ public class CustomValidationExceptionHandler {
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(PingServiceException.class)
 	public final HttpEntity<PingResponseDto> handlesPingServiceExceptions(PingServiceException ex, WebRequest request) {
-		log.error(ex, ex);
+		log.error(ex.getMessage());
 		PingResponseDto pingResponseDto = new PingResponseDto(PingStatus.UNAVAILABLE_SUBSCRIBER);
 		return new HttpEntity<>(pingResponseDto);
 	}

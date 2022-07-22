@@ -18,7 +18,8 @@ public class SmsService implements ISmsService {
 
   @Override
   public void send(SendMessageRequestDto sendMessageRequestDto) {
-    log.info(String.format("Sending SMS to %s that %s is now available", sendMessageRequestDto.getDestinationPhone(),
+    log.info(String.format("Sending SMS to %s that %s is now available",
+        sendMessageRequestDto.getDestinationPhone(),
         sendMessageRequestDto.getSourcePhone()));
     Random random = new Random(System.nanoTime());
 
