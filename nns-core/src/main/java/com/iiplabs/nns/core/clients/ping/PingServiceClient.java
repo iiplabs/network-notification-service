@@ -3,6 +3,8 @@ package com.iiplabs.nns.core.clients.ping;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,7 +29,7 @@ import reactor.util.retry.Retry;
 @Component
 public class PingServiceClient implements IPingServiceClient {
 
-    private final WebClient webClient;
+    private WebClient webClient;
 
     @Value("${ping.url}")
     private String pingServiceEndpoint;
@@ -37,21 +39,6 @@ public class PingServiceClient implements IPingServiceClient {
 
     private static final long DEFAULT_TIMEOUT_SECONDS = 15;
 
-    public PingServiceClient(WebClient.Builder webClientBuilder) {
-        HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) DEFAULT_TIMEOUT_SECONDS * 1000)
-                .responseTimeout(Duration.ofSeconds(DEFAULT_TIMEOUT_SECONDS))
-                .doOnConnected(
-                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS))
-                                .addHandlerLast(new WriteTimeoutHandler(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
-
-        this.webClient = webClientBuilder
-                .baseUrl(pingServiceEndpoint)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .build();
-    }
-
     @Override
     public Mono<PingClientResponse> send(String authToken, String sourcePhone, long maxAttempts) {
         return webClient.get()
@@ -59,10 +46,10 @@ public class PingServiceClient implements IPingServiceClient {
                 .headers(h -> h.setBearerAuth(authToken))
                 .retrieve()
                 .bodyToMono(PingClientResponse.class)
-                .doOnError(error -> log.error("Problem locating subscriber: {}", error.getMessage()))
                 .onErrorResume(error -> Mono.just(new PingClientResponse(PingStatus.UNAVAILABLE_SUBSCRIBER)))
                 .map(result -> {
                     if (result.getStatus() == null || PingStatus.UNAVAILABLE_SUBSCRIBER.equals(result.getStatus())) {
+                        log.error("Subscriber {} unavailable", sourcePhone);
                         throw new NotificationServiceException(sourcePhone, HttpStatus.INTERNAL_SERVER_ERROR.value());
                     }
                     return result;
@@ -71,9 +58,27 @@ public class PingServiceClient implements IPingServiceClient {
                         .filter(throwable -> throwable instanceof NotificationServiceException)
                         .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
                             throw new NotificationServiceException(
-                                    "Exhausted max retries to locate subscriber",
+                                    String.format("Exhausted max retries to locate subscriber %s", sourcePhone),
                                     HttpStatus.SERVICE_UNAVAILABLE.value());
                         }));
+    }
+
+    @PostConstruct
+    private void initClient() {
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) DEFAULT_TIMEOUT_SECONDS * 1000)
+                .responseTimeout(Duration.ofSeconds(DEFAULT_TIMEOUT_SECONDS))
+                .doOnConnected(
+                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+                                .addHandlerLast(new WriteTimeoutHandler(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)));
+
+        this.webClient = WebClient.builder()
+                .baseUrl(pingServiceEndpoint)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
+
+        log.info("Ping Service Client configured for base url {}", pingServiceEndpoint, pingServiceRepeatIntervalSeconds);
     }
 
 }
