@@ -27,6 +27,7 @@ services:
     ports:
       - '${NNS_CORE_SERVER_PORT}:${NNS_CORE_SERVER_PORT}'
     environment: 
+      TZ: ${TZ}
       NNS_CORE_SERVER_PORT: ${NNS_CORE_SERVER_PORT}
       NNS_CORE_DB_URL: ${NNS_CORE_DB_URL}
       NNS_CORE_SQL_USER: ${NNS_CORE_SQL_USER}
@@ -50,6 +51,7 @@ services:
     ports:
       - '${PING_SERVER_PORT}:${PING_SERVER_PORT}'
     environment: 
+      TZ: ${TZ}
       PING_SERVER_PORT: ${PING_SERVER_PORT}
 
   sms-service:
@@ -61,6 +63,7 @@ services:
     ports:
       - '${SMS_SERVER_PORT}:${SMS_SERVER_PORT}'
     environment: 
+      TZ: ${TZ}
       SMS_SERVER_PORT: ${SMS_SERVER_PORT}
 
   nns-ui:
@@ -72,6 +75,7 @@ services:
     ports:
       - "3000:3000"
     environment: 
+      TZ: ${TZ}
       UI_API_URL: ${UI_API_URL}
       UI_SOCKET_URL: ${UI_SOCKET_URL}
     command:
@@ -83,6 +87,8 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    environment:
+      TZ: ${TZ}
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
     depends_on:
