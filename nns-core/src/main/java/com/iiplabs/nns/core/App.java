@@ -16,7 +16,7 @@ import com.iiplabs.nns.core.utils.AuditorAwareImpl;
 
 @EnableAsync
 @EnableCaching
-@EnableJpaAuditing(modifyOnCreate=false, auditorAwareRef="auditorAware")
+@EnableJpaAuditing(modifyOnCreate = false, auditorAwareRef = "auditorAware")
 @PropertySource("classpath:config.properties")
 @SpringBootApplication
 public class App {
