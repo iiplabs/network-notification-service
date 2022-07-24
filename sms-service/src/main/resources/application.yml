@@ -21,6 +21,6 @@ bucket4j:
     http-response-body: '{ "status": 429, "error": "Too Many Requests", "message": "Too Many Requests" }'
     rate-limits:
     - bandwidths:
-      - capacity: 300
+      - capacity: ${SMS_MAX_REQUESTS_PER_SECOND}
         time: 1
         unit: seconds
