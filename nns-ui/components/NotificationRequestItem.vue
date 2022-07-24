@@ -19,9 +19,28 @@
                     <span v-if="statusOK" class="green--text text--darken-1">
                         {{ status }}
                     </span>
-                    <span v-else class="red--text text--darken-1">
+                    <span v-else class="red--text text--darken-3">
                         {{ status }}
                     </span>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column">
+                <div class="my-2">
+                    <span>{{ $t('notification_requests_view.item.messages.title') }}</span>
+                    <span v-if="completed" class="green--text text--darken-1">OK</span>
+                </div>
+                <div v-for="message in sortedMessagesByTimeStamp(item.messages)" :key="message.localId">
+                    <div>
+                        <span>{{ message.timeStamp }}</span>
+                        <span> - </span>
+                        <span>{{ message.status }}</span>
+                    </div>
+                    <div v-if="message.comments">
+                        <span>{{ $t('notification_requests_view.item.messages.item.comments') }}</span>
+                        <span> </span>
+                        <span>{{ message.comments }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -53,11 +72,24 @@ export default {
             return msisdnA
         },
         status() {
-            const { status } = this.item
-            return status
+            const { status, statusCode } = this.item
+            return `${status} (${statusCode})`
         },
         statusOK() {
-            return this.status === 'OK'
+            return this.status.startsWith('OK')
+        },
+
+        completed() {
+            const { messages } = this.item
+            return messages.findIndex(m => m.status === 'COMPLETED') > -1
+        }
+    },
+
+    methods: {
+        sortedMessagesByTimeStamp(collection) {
+            return [...collection].sort(function (a, b) {
+                return (new Date(a.timeStamp)).getTime() - (new Date(b.timeStamp)).getTime()
+            })
         }
     }
 }

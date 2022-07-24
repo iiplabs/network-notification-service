@@ -1,12 +1,27 @@
 <template>
     <div class="NotificationRequestsView">
-        <SmallTitle v-if="title">{{ title }} ({{ total }})</SmallTitle>
+        <div class="d-flex flex-row justify-space-between align-baseline">
+            <SmallTitle v-if="title">{{ title }} (total - {{ total }}, posted - {{ posted }}, delayed - {{ delayed }},
+                completed - {{ completed }})</SmallTitle>
+            <v-checkbox v-model="hideCompleted" :label="$t('notification_requests_view.hide_completed')" color="error"
+                hide-details></v-checkbox>
+            <v-btn :small="$vuetify.breakpoint.xsOnly" color="secondary" outlined :disabled="showProgress"
+                :loading="showProgress" @click="clear">
+                {{ $t('notification_requests_view.clear') }}
+                <template #loader>
+                    <span class="cmac-loader">
+                        <v-icon light>mdi-cached</v-icon>
+                    </span>
+                </template>
+            </v-btn>
+        </div>
 
         <div class="d-flex flex-column">
             <v-data-iterator :items="requests" :items-per-page="-1">
                 <template #default="props">
                     <div class="d-flex flex-wrap">
-                        <NotificationRequestItem v-for="item in props.items" :key="item.webId" :item="item" />
+                        <NotificationRequestItem v-for="item in filterRequestsByCompletedStatus(props.items)"
+                            :key="item.webId" :item="item" />
                     </div>
                 </template>
             </v-data-iterator>
@@ -25,26 +40,117 @@ export default {
             type: String,
             required: false,
             default: null
+        },
+        showProgress: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
+
+    data: () => ({
+        requests: [],
+
+        unmatched: [],
+
+        hideCompleted: true
+    }),
+
+    computed: {
+        completed() {
+            return this.requests.filter(r => {
+                const { messages } = r
+                return messages.findIndex(m => m.status === 'COMPLETED') > -1
+            }).length
+        },
+
+        delayed() {
+            return this.requests.filter(r => {
+                const { messages } = r
+                return messages.findIndex(m => m.status === 'SMS_DELAYED') > -1
+            }).length
+        },
+
+        posted() {
+            return this.requests.filter(r => {
+                const { status } = r
+                return status === 'OK'
+            }).length
+        },
+
+        total() {
+            return this.requests.length
         }
     },
 
     created() {
-        this.$root.$on('onClearNotificationRequests', () => {
-            this.requests = []
+        this.$root.$on('onAddNotificationRequest', (payload) => {
+            this.requests.push({ ...payload, messages: [] })
         })
 
-        this.$root.$on('onAddNotificationRequest', (payload) => {
-            this.requests.push(payload)
+        this.$root.$on('onSocketMessage', (payload) => {
+            if (!this.addSocketMessageToRequest(payload)) {
+                const { webId } = payload
+                if (webId) {
+                    console.log(`Problem matching request for webId ${webId}`)
+                    this.unmatched.push({ ...payload, processed: false })
+                } else {
+                    console.log('Message has no webId; to be discarded', payload)
+                }
+            }
         })
     },
 
-    data: () => ({
-        requests: []
-    }),
+    mounted() {
+        this.processUnmatchedMessages();
+    },
 
-    computed: {
-        total() {
-            return this.requests.length
+    methods: {
+        clear() {
+            this.requests = []
+        },
+
+        addSocketMessageToRequest(socketMessage) {
+            let status = true
+
+            const { webId } = socketMessage
+            if (webId) {
+                const webIdRequests = this.requests.filter(i => i.webId === webId)
+                if (webIdRequests.length > 0) {
+                    const r = webIdRequests[0]
+                    const { messages } = r
+                    messages.push({ ...socketMessage, localId: this.$newWebId() })
+                } else {
+                    status = false
+                }
+            }
+
+            return status
+        },
+
+        processUnmatchedMessages() {
+            for (const message of this.unmatched) {
+                if (this.addSocketMessageToRequest(message)) {
+                    Object.assign(message, { ...message, processed: true });
+                }
+            }
+
+            this.unmatched = this.unmatched.filter(i => !i.processed)
+
+            setTimeout(() => {
+                this.processUnmatchedMessages();
+            }, 10000);
+        },
+
+        filterRequestsByCompletedStatus(collection) {
+            if (this.hideCompleted) {
+                return [...collection].filter(r => {
+                    const { messages } = r
+                    return messages.findIndex(m => m.status === 'COMPLETED') < 0
+                })
+            } else {
+                return [...collection]
+            }
         }
     }
 }

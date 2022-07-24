@@ -5,17 +5,25 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iiplabs.nns.core.clients.sms.model.SmsClientRequest;
 import com.iiplabs.nns.core.clients.sms.model.SmsClientResponse;
 import com.iiplabs.nns.core.exceptions.NotificationServiceException;
+import com.iiplabs.nns.core.model.dto.NotificationStatus;
+import com.iiplabs.nns.core.model.dto.NotificationWebSocketMessage;
+import com.iiplabs.nns.core.utils.NnsObjectFactory;
 
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -31,6 +39,12 @@ public class SmsServiceClient implements ISmsServiceClient {
 
         private WebClient webClient;
 
+        @Autowired
+        private ObjectMapper objectMapper;
+
+        @Autowired
+        private SimpMessagingTemplate simpMessagingTemplate;
+
         @Value("${sms.url}")
         private String smsServiceEndpoint;
 
@@ -40,7 +54,8 @@ public class SmsServiceClient implements ISmsServiceClient {
         private static final long DEFAULT_TIMEOUT_SECONDS = 15;
 
         @Override
-        public Mono<SmsClientResponse> send(String authToken, String sourcePhone, String destinationPhone, String text,
+        public Mono<SmsClientResponse> send(String authToken, String webId, String sourcePhone, String destinationPhone,
+                        String text,
                         long maxAttempts) {
                 SmsClientRequest request = new SmsClientRequest();
                 request.setSourcePhone(sourcePhone);
@@ -56,13 +71,23 @@ public class SmsServiceClient implements ISmsServiceClient {
                                 .bodyToMono(SmsClientResponse.class)
                                 .doOnError(error -> {
                                         log.error("SMS Service returned error: {}", error.getMessage());
-                                        log.error(error, error);
+
+                                        NotificationWebSocketMessage webSocketMessage = NnsObjectFactory
+                                                        .getNotificationWebSocketMessage(webId,
+                                                                        NotificationStatus.SMS_FAILED);
+                                        try {
+                                                simpMessagingTemplate.convertAndSend("/topic/ws",
+                                                                objectMapper.writeValueAsString(webSocketMessage));
+                                        } catch (MessagingException | JsonProcessingException e) {
+                                                log.error("Error posting to Web Sockets");
+                                        }
                                 })
                                 .retryWhen(Retry.fixedDelay(maxAttempts,
                                                 Duration.ofSeconds(smsServiceRepeatIntervalSeconds))
                                                 .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> {
                                                         throw new NotificationServiceException(
-                                                                        String.format("Exhausted max retries to invoke SMS Service to notify %s", destinationPhone),
+                                                                        String.format("Exhausted max retries to invoke SMS Service to notify %s",
+                                                                                        destinationPhone),
                                                                         HttpStatus.SERVICE_UNAVAILABLE.value());
                                                 }));
         }

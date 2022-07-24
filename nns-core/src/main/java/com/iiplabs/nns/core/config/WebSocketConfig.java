@@ -18,8 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
-        String origins[] = { "http://localhost:3000", "http://nns-ui:3000", "http://nns-nginx:8080" };
-        registry.addEndpoint("/ws").setAllowedOrigins(origins);
+        String origins[] = { "http://localhost:3000", "http://localhost:8080", "http://nns-ui:3000", "http://nns-nginx:8080" };
         registry.addEndpoint("/ws").setAllowedOrigins(origins).withSockJS();
     }
 

@@ -6,8 +6,8 @@ export default (context) => {
       instructions: {
         title: 'Using this application/form',
 
-        i1: 'Enter number of notifications.',
-        i2: 'Select strategy to send requests simultaneously or sequentially.'
+        i1: 'Enter number of notifications (1-2000).',
+        i2: 'Select strategy to send requests sequentially or simultaneously.'
       },
 
       tests_setup: {
@@ -26,16 +26,19 @@ export default (context) => {
 
       notification_requests_view: {
         title: 'Notifications Requests',
+        hide_completed: 'Hide completed',
         item: {
           webId: 'Web Id:',
           sourcePhone: 'Source Phone (msisdnB):',
           destinationPhone: 'Destination Phone (msisdnA):',
-          status: 'POST status:'
-        }
-      },
-
-      notifications_view: {
-        title: 'Notifications in progress',
+          status: 'POST status:',
+          messages: {
+            title: 'Processing flow:',
+            item: {
+              comments: 'Comments: '
+            }
+          }
+        },
 
         clear: 'Clear'
       }

@@ -3,6 +3,9 @@
 </template>
 
 <script>
+import SockJS from "sockjs-client"
+import Stomp from "webstomp-client"
+
 export default {
     name: 'SocketConnect',
 
@@ -32,48 +35,36 @@ export default {
             const url = `${this.$config.socketUrl}`
             console.log(`Connecting Web Socket to ${url}`)
 
-            const socket = new WebSocket(url);
+            const socket = new SockJS(url)
+            const options = { debug: false, heartbeat: false, protocols: ['v12.stomp'] }
+            this.stompClient = Stomp.over(socket, options)
 
-            socket.onopen = () => {
-                console.log("Web Socket connected");
+            this.stompClient.connect(
+                {},
+                frame => {
+                    console.log("Web Socket connected.")
 
-                this.socketInfo = { ...this.socketInfo, status: 'CONNECTED' }
-                this.$root.$emit('onSocketInfoUpdated', this.socketInfo)
+                    const { command } = frame
+                    this.socketInfo = { ...this.socketInfo, status: command }
+                    this.$root.$emit('onSocketInfoUpdated', this.socketInfo)
 
-                this.keepAliveId = setInterval(() => {
-                    const messageType = 'keep_alive'
-                    const { userId } = this.socketInfo
-                    const timeStamp = new Date().toISOString()
-                    const keepAlive = {
-                        messageType,
-                        userId,
-                        timeStamp,
-                    };
-                    if (socket.readyState === socket.OPEN) {
-                        socket.send(JSON.stringify(keepAlive))
-                    }
-                }, 540000);
-            };
-
-            socket.onerror = function () {
-                console.log("Web Socket error");
-            };
+                    this.stompClient.subscribe("/topic/ws", message => {
+                        const { body } = message
+                        const messageData = JSON.parse(body)
+                        console.log(messageData)
+                        this.$root.$emit('onSocketMessage', messageData)
+                    })
+                },
+                error => {
+                    console.log(error)
+                }
+            )
 
             socket.onclose = () => {
-                console.log("Web Socket closed.");
-                clearInterval(this.keepAliveId);
+                console.log("Web Socket closed.")
 
                 this.socketInfo = { ...this.socketInfo, status: 'DISCONNECTED' }
                 this.$root.$emit('onSocketInfoUpdated', this.socketInfo)
-
-                // reconnect
-                this.socketConnect();
-            };
-
-            socket.onmessage = (message) => {
-                const { data } = message;
-                const messageData = JSON.parse(data);
-                console.log(messageData);
             }
         }
     }

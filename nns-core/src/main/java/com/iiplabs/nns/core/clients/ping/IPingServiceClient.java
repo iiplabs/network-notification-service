@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface IPingServiceClient {
 
-    Mono<PingClientResponse> send(String authToken, String sourcePhone, long maxAttempts);
+    Mono<PingClientResponse> send(String authToken, String webId, String sourcePhone, long maxAttempts);
 
 }

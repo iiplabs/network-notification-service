@@ -10,6 +10,33 @@
         :min="min">
       </v-slider>
 
+      <div class="d-flex flex-column flex-sm-row my-2">
+        <v-btn class="ma-2" outlined @click="setRequests(1)">
+          1
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(5)">
+          5
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(10)">
+          10
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(100)">
+          100
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(200)">
+          200
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(500)">
+          500
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(1000)">
+          1000
+        </v-btn>
+        <v-btn class="ma-2" outlined @click="setRequests(2000)">
+          2000
+        </v-btn>
+      </div>
+
       <div class="d-flex flex-column flex-sm-row">
         <v-radio-group v-model="strategy" :label="$t('tests_setup.strategy.title')" row>
           <v-radio :label="$t('tests_setup.strategy.options.sequentially')" value="SEQ"></v-radio>
@@ -89,6 +116,10 @@ export default {
   },
 
   methods: {
+    setRequests(requestsNum) {
+      this.sliderVal = requestsNum
+    },
+
     enterValue() {
       const { delay, sliderVal, strategy } = this;
       this.$emit("controlUpdated", {

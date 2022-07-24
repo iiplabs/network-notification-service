@@ -3,6 +3,7 @@ package com.iiplabs.nns.core.controllers;
 import javax.validation.Valid;
 
 import com.iiplabs.nns.core.annotations.RestControllerAnnotation;
+import com.iiplabs.nns.core.model.Notification;
 import com.iiplabs.nns.core.model.dto.UnavailabeSubscriberRequestDto;
 import com.iiplabs.nns.core.model.dto.UnavailabeSubscriberResponseDto;
 import com.iiplabs.nns.core.services.INotificationService;
@@ -27,8 +28,10 @@ public class NotificationController {
   @PostMapping("/unavailableSubscriber")
   public ResponseEntity<UnavailabeSubscriberResponseDto> unavailableSubscriber(
       @Valid @RequestBody UnavailabeSubscriberRequestDto unavailabeSubscriberRequestDto) {
-    notificationService.create(unavailabeSubscriberRequestDto);
-    return ResponseEntity.ok(new UnavailabeSubscriberResponseDto());
+    Notification notification = notificationService.create(unavailabeSubscriberRequestDto);
+    UnavailabeSubscriberResponseDto response = new UnavailabeSubscriberResponseDto();
+    response.setWebId(notification.getWebId());
+    return ResponseEntity.ok(response);
   }
 
 }

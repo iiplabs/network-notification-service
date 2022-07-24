@@ -33,7 +33,7 @@ public class CustomValidationExceptionHandler {
 		Map<String, String> errors = ex.getBindingResult().getAllErrors().stream()
 				.collect(Collectors.toMap(error -> StringUtil.getLastField(((FieldError) error).getField()),
 						ObjectError::getDefaultMessage));
-		UnavailabeSubscriberResponseDto unavailableSubscriberResponseDto = new UnavailabeSubscriberResponseDto(errors, UnavailableSubscriberStatus.FAIL);
+		UnavailabeSubscriberResponseDto unavailableSubscriberResponseDto = new UnavailabeSubscriberResponseDto(errors, UnavailableSubscriberStatus.FAIL, null);
 		log.error("Encountered data validation problem: {}", unavailableSubscriberResponseDto);
 		return new HttpEntity<>(unavailableSubscriberResponseDto);
 	}

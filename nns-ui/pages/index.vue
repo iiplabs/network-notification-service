@@ -4,13 +4,10 @@
       <v-card-text>
         <TestInstructions class="mb-4" />
 
-        <TestSetupControl :title="$t('tests_setup.title')" :min="0" :max="500" :show-progress="progress"
+        <TestSetupControl :title="$t('tests_setup.title')" :min="0" :max="2000" :show-progress="progress"
           :socket-info="socketInfo" @controlUpdated="generateTestNotifications" />
 
         <NotificationRequestsView :title="$t('notification_requests_view.title')" />
-
-        <NotificationsView v-if="notificationsLoaded" :title="$t('notifications_view.title')"
-          :notifications="notifications" @clearNotifications="onClearNotifications" />
       </v-card-text>
     </v-card>
 
@@ -22,22 +19,14 @@
 export default {
   name: "IndexPage",
 
-  head() {
-    return {
-      title: `${this.$t('title')}`
-    }
-  },
-
   data: () => ({
     progress: false,
-    notifications: [],
-
     socketInfo: null
   }),
 
-  computed: {
-    notificationsLoaded() {
-      return this.notifications && this.notifications.length > 0;
+  head() {
+    return {
+      title: `${this.$t('title')}`
     }
   },
 
@@ -71,12 +60,6 @@ export default {
       }
     },
 
-    onClearNotifications() {
-      this.notifications = [];
-
-      this.$root.$emit('onClearNotificationRequests')
-    },
-
     getRandomPhone() {
       const webId = this.$newWebId()
       return webId.substring(webId.length - 11, webId.length)
@@ -84,28 +67,34 @@ export default {
 
     async sendSequentially(requests, delay) {
       for (const r of requests) {
-        const status = await this.sendRequest(r)
-        this.$root.$emit('onAddNotificationRequest', { ...r, status })
+        const response = await this.sendRequest(r)
+        const { webId, status, statusCode } = response
+        this.$root.$emit('onAddNotificationRequest', { ...r, webId, status, statusCode })
         await this.$sleep(delay)
       }
     },
 
-    async sendSimultaneously(requests) {
+    sendSimultaneously(requests) {
       // transform into bunch of promises
       requests.map(async r => {
-        const status = await this.sendRequest(r)
-        this.$root.$emit('onAddNotificationRequest', { ...r, status })
+        const response = await this.sendRequest(r)
+        const { webId, status, statusCode } = response
+        this.$root.$emit('onAddNotificationRequest', { ...r, webId, status, statusCode })
       })
     },
 
     async sendRequest(r) {
       let status = 'OK'
-      await this.$axios
+      let statusCode = 200
+      const data = await this.$axios
         .$post('/unavailableSubscriber', r)
         .catch(e => {
           status = 'FAIL'
+          statusCode = e.response.status
         })
-      return status
+      console.log(data)
+      const { webId } = data
+      return { webId, status, statusCode }
     }
   }
 }

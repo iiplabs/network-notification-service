@@ -19,11 +19,13 @@
     "core-js": "^3.19.3",
     "cross-env": "^7.0.3",
     "nuxt": "^2.15.8",
+    "sockjs-client": "^1.6.1",
     "vue": "^2.6.14",
     "vue-server-renderer": "^2.6.14",
     "vue-template-compiler": "^2.6.14",
     "vuetify": "^2.6.1",
-    "webpack": "^4.46.0"
+    "webpack": "^4.46.0",
+    "webstomp-client": "^1.2.6"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.16.3",

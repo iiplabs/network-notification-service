@@ -22,10 +22,13 @@ import com.iiplabs.nns.core.clients.ping.IPingServiceClient;
 import com.iiplabs.nns.core.clients.sms.ISmsServiceClient;
 import com.iiplabs.nns.core.events.NotifyEvent;
 import com.iiplabs.nns.core.model.Notification;
+import com.iiplabs.nns.core.model.dto.NotificationStatus;
+import com.iiplabs.nns.core.model.dto.NotificationWebSocketMessage;
 import com.iiplabs.nns.core.model.dto.UnavailabeSubscriberRequestDto;
 import com.iiplabs.nns.core.reps.INotificationRepository;
 import com.iiplabs.nns.core.utils.DaoFactory;
 import com.iiplabs.nns.core.utils.DateTimeUtil;
+import com.iiplabs.nns.core.utils.NnsObjectFactory;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -73,11 +76,10 @@ public class NotificationService implements INotificationService {
 
     log.info("New subscriber notification request created with webId {}", notification.getWebId());
 
-    try {
-      simpMessagingTemplate.convertAndSend("/topic/ws", objectMapper.writeValueAsString(notification));
-    } catch (MessagingException | JsonProcessingException e) {
-      log.error("Error posting to Web Sockets");
-    }
+    NotificationWebSocketMessage message = NnsObjectFactory.getNotificationWebSocketMessage(notification.getWebId(),
+        notification.getSourcePhone(),
+        notification.getDestinationPhone(), NotificationStatus.NEW);
+    updateWebSocket(message);
 
     // submit request to locate subscriber within the network
     eventBus.post(
@@ -95,29 +97,47 @@ public class NotificationService implements INotificationService {
     // delay strategy
     long maxAttempts = ((expiryWindowHours * 60 * 60) / pingErrorRepeatIntervalSeconds);
 
-    pingServiceClient.send(null, sourcePhone, maxAttempts).subscribe(pingClientResponse -> {
+    pingServiceClient.send(null, webId, sourcePhone, maxAttempts).subscribe(pingClientResponse -> {
       log.info("Subscriber {} located. Sending SMS notification", sourcePhone);
+
+      NotificationWebSocketMessage webSocketMessage = NnsObjectFactory.getNotificationWebSocketMessage(webId,
+          NotificationStatus.LOCATED);
+      updateWebSocket(webSocketMessage);
+
       String text = getNotificationBody(textTemplate);
       log.info("User message content: {}", text);
 
+      webSocketMessage = NnsObjectFactory.getNotificationWebSocketMessage(webId,
+          NotificationStatus.SMS);
+      updateWebSocket(webSocketMessage);
+
       long durationSeconds = getDelayUntilNextSmsSendWindow();
       if (durationSeconds > 0) {
-        log.info("Delaying SMS message for {}, until the next window {}",
+        String message = String.format("Delaying SMS message for %s, until the next window %s",
             DurationFormatUtils.formatDuration(durationSeconds * 1000, "HH'h' mm'm' ss's'", true), smsSendWindow);
+        log.info(message);
+        NotificationWebSocketMessage webSocketMessageDelayed = NnsObjectFactory.getNotificationWebSocketMessage(webId,
+            NotificationStatus.SMS_DELAYED, message);
+        updateWebSocket(webSocketMessageDelayed);
       }
 
       // calc duration until tne next message window
-      smsServiceClient.send(null, sourcePhone, destinationPhone, text, SMS_SERVICE_MAX_ATTEMPTS)
+      smsServiceClient.send(null, webId, sourcePhone, destinationPhone, text, SMS_SERVICE_MAX_ATTEMPTS)
           .delaySubscription(Duration.ofSeconds(durationSeconds))
           .subscribe(smsClientResponse -> {
             notificationsRepository.deleteByWebId(webId);
             log.info("Removed notification request webId {}", webId);
+            NotificationWebSocketMessage webSocketMessageCompleted = NnsObjectFactory.getNotificationWebSocketMessage(
+                webId,
+                NotificationStatus.COMPLETED);
+            updateWebSocket(webSocketMessageCompleted);
           });
     });
   }
 
   /**
    * Replaces {$time} key with the current time
+   * 
    * @param template
    * @return
    */
@@ -138,4 +158,11 @@ public class NotificationService implements INotificationService {
     return DateTimeUtil.getDelayUntilNextSmsSendWindow(smsSendWindow, LocalDateTime.now());
   }
 
+  private void updateWebSocket(NotificationWebSocketMessage message) {
+    try {
+      simpMessagingTemplate.convertAndSend("/topic/ws", objectMapper.writeValueAsString(message));
+    } catch (MessagingException | JsonProcessingException e) {
+      log.error("Error posting to Web Sockets");
+    }
+  }
 }

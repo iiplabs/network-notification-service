@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface ISmsServiceClient {
 
-    Mono<SmsClientResponse> send(String authToken, String sourcePhone, String destinationPhone, String text, long maxAttempts);
+    Mono<SmsClientResponse> send(String authToken, String webId, String sourcePhone, String destinationPhone, String text, long maxAttempts);
 
 }

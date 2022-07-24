@@ -18,4 +18,6 @@ public class UnavailabeSubscriberResponseDto {
 
     private UnavailableSubscriberStatus status = UnavailableSubscriberStatus.OK;
 
+    private String webId;
+
 }
