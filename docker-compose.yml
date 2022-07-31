@@ -3,9 +3,9 @@ version: '3.9'
 services:
   mysql:
     container_name: nns-core-db
-    image: mysql/mysql-server:8.0.29
+    image: mysql/mysql-server:8.0.30
     command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1
-    restart: always
+    restart: unless-stopped
     volumes:
       - nns-data:/var/lib/mysql
       - ./docker/db/scripts/backend:/docker-entrypoint-initdb.d
@@ -14,6 +14,7 @@ services:
       MYSQL_DATABASE: ${NNS_CORE_SQL_DATABASE}
       MYSQL_USER: ${NNS_CORE_SQL_USER}
       MYSQL_PASSWORD: ${NNS_CORE_SQL_PASSWORD}
+      TZ: ${TZ}
     ports:
       # <Port exposed> : < MySQL Port running inside container>
       - '${NNS_CORE_MYSQL_PORT}:3306'
@@ -23,7 +24,7 @@ services:
       context: ./nns-core/
     image: nns-core:latest
     container_name: nns-core
-    restart: always
+    restart: unless-stopped
     ports:
       - '${NNS_CORE_SERVER_PORT}:${NNS_CORE_SERVER_PORT}'
     environment: 
@@ -48,7 +49,7 @@ services:
       context: ./ping-service/
     image: ping-service:latest
     container_name: ping-service
-    restart: always
+    restart: unless-stopped
     ports:
       - '${PING_SERVER_PORT}:${PING_SERVER_PORT}'
     environment: 
@@ -60,7 +61,7 @@ services:
       context: ./sms-service/
     image: sms-service:latest
     container_name: sms-service
-    restart: always
+    restart: unless-stopped
     ports:
       - '${SMS_SERVER_PORT}:${SMS_SERVER_PORT}'
     environment: 
@@ -73,7 +74,7 @@ services:
       context: ./nns-ui/
     image: nns-ui:latest
     container_name: nns-ui
-    restart: always
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment: 
@@ -86,7 +87,7 @@ services:
   nns-nginx:
     image: arm64v8/nginx:latest
     container_name: nns-nginx
-    restart: always
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
