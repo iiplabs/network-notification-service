@@ -1,5 +1,9 @@
 # nns-ui
 
+This project shall provide a simple UI for generating batches of notification requests. After the project is loaded in the browser, it opens a WebSocket connection, which is required for receiving updates on requests status flow.
+
+The default port is 3000.
+
 ## Build Setup
 
 ```bash
