@@ -50,11 +50,6 @@
         :disabled="sliderVal === 0 || showProgress || !socketConnected" :loading="showProgress" class="mx-auto"
         @click="enterValue">
         {{ $t('tests_setup.button') }}
-        <template #loader>
-          <span class="cmac-loader">
-            <v-icon light>mdi-cached</v-icon>
-          </span>
-        </template>
       </v-btn>
     </div>
 

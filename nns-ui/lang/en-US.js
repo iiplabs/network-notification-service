@@ -24,6 +24,10 @@ export default (context) => {
         }
       },
 
+      requests429: {
+        title: 'Requests with HTTP response code 429'
+      },
+
       notification_requests_view: {
         title: 'Notifications Requests',
         hide_completed: 'Hide completed',

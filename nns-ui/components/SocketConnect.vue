@@ -9,6 +9,14 @@ import Stomp from "webstomp-client"
 export default {
     name: 'SocketConnect',
 
+    props: {
+        logWebSocket: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
+
     data: () => ({
         socketInfo: {},
 
@@ -51,7 +59,9 @@ export default {
                     this.stompClient.subscribe("/topic/ws", message => {
                         const { body } = message
                         const messageData = JSON.parse(body)
-                        console.log(messageData)
+                        if (this.logWebSocket) {
+                            console.log(messageData)
+                        }
                         this.$root.$emit('onSocketMessage', messageData)
                     })
                 },

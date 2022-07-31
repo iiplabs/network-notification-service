@@ -1,5 +1,5 @@
 <template>
-    <div class="NotificationRequestItem ma-2">
+    <div class="NotificationRequestItem pa-4">
         <div class="d-flex flex-column">
             <div class="d-flex flex-row">
                 <div>{{ $t('notification_requests_view.item.webId') }}</div>
@@ -30,8 +30,9 @@
                     <span>{{ $t('notification_requests_view.item.messages.title') }}</span>
                     <span v-if="completed" class="green--text text--darken-1">OK</span>
                 </div>
-                <div v-for="message in sortedMessagesByTimeStamp(item.messages)" :key="message.localId">
+                <div v-for="(message, index) in sortedMessagesByTimeStamp(item.messages)" :key="message.localId">
                     <div>
+                        <span>{{ index + 1 }}.</span>
                         <span>{{ message.timeStamp }}</span>
                         <span> - </span>
                         <span>{{ message.status }}</span>
