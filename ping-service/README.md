@@ -4,11 +4,11 @@ Mock service to check if subscriber has reconnected to the mobile network.
 
 End-points:
 
-1. GET "api/v1/ping?msisdn=<msisndB>"
+1. GET "api/v1/ping?msisdn=\<msisndB\>"
 
 "msisndB" is the 11 digits phone number
 
-The service responds with a random response on whether subscriber is connected to mobile network.
+The service responds randomly on whether subscriber is connected to mobile network.
 
 The service's response when subscriber is in network.
 
