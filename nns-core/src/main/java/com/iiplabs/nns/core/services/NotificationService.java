@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.AsyncEventBus;
 import com.iiplabs.nns.core.clients.ping.IPingServiceClient;
+import com.iiplabs.nns.core.clients.ping.model.PingStatus;
 import com.iiplabs.nns.core.clients.sms.ISmsServiceClient;
 import com.iiplabs.nns.core.events.NotifyEvent;
 import com.iiplabs.nns.core.model.Notification;
@@ -90,6 +91,7 @@ public class NotificationService implements INotificationService {
   }
 
   @Override
+  @Transactional
   public void notify(String webId, String sourcePhone, String destinationPhone) {
     log.info("Begin locating subscriber {}", sourcePhone);
 
@@ -98,6 +100,21 @@ public class NotificationService implements INotificationService {
     long maxAttempts = ((expiryWindowHours * 60 * 60) / pingErrorRepeatIntervalSeconds);
 
     pingServiceClient.send(null, webId, sourcePhone, maxAttempts).subscribe(pingClientResponse -> {
+      if (pingClientResponse.getStatus().equals(PingStatus.UNAVAILABLE_SUBSCRIBER)) {
+        String message = String.format("Exhausted max retries to locate subscriber %s", sourcePhone);
+        log.error(message);
+
+        notificationsRepository.deleteByWebId(webId);
+        log.info("Removed notification of webId {}", webId);
+
+        NotificationWebSocketMessage webSocketMessageCompleted = NnsObjectFactory.getNotificationWebSocketMessage(
+            webId,
+            NotificationStatus.LOCATION_FAILED, message);
+        updateWebSocket(webSocketMessageCompleted);
+
+        return;
+      }
+
       log.info("Subscriber {} located. Sending SMS notification", sourcePhone);
 
       NotificationWebSocketMessage webSocketMessage = NnsObjectFactory.getNotificationWebSocketMessage(webId,
@@ -126,7 +143,7 @@ public class NotificationService implements INotificationService {
           .delaySubscription(Duration.ofSeconds(durationSeconds))
           .subscribe(smsClientResponse -> {
             notificationsRepository.deleteByWebId(webId);
-            log.info("Removed notification request webId {}", webId);
+            log.info("Removed notification of webId {}", webId);
             NotificationWebSocketMessage webSocketMessageCompleted = NnsObjectFactory.getNotificationWebSocketMessage(
                 webId,
                 NotificationStatus.COMPLETED);
