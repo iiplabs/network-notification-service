@@ -155,8 +155,10 @@ export default {
             let { webId } = r;
             let status = "OK";
             let statusCode = 200;
+
+            const { msisdnA, msisdnB } = r;
             const data = await this.$axios
-                .$post("/unavailableSubscriber", r)
+                .$post("/unavailableSubscriber", { msisdnA, msisdnB })
                 .catch(e => {
                     status = "FAIL";
                     if (e && e.response) {
@@ -168,6 +170,7 @@ export default {
             if (data) {
                 webId = data.webId;
             }
+            
             return { webId, status, statusCode };
         }
     },
