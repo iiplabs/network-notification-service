@@ -23,7 +23,7 @@
 		<guava.version>31.1-jre</guava.version>
 		<reactor.version>1.0.1.RELEASE</reactor.version>
 
-		<reactor-test.version>3.4.21</reactor-test.version>
+		<reactor-test.version>3.5.0</reactor-test.version>
 		<mock.http.server.version>4.10.0</mock.http.server.version>
 	</properties>
 
