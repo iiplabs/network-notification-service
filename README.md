@@ -19,28 +19,43 @@ Upon success, the system shall send an SMS message to the person who attempted t
 Below is the list of recommended content for your local .env file.
 
 NNS_CORE_SQL_DATABASE=nns-core
+
 NNS_CORE_SQL_USER=nns
+
 NNS_CORE_SQL_PASSWORD=1234567890
+
 NNS_CORE_SQL_ROOT_PASSWORD=root
+
 NNS_CORE_MYSQL_PORT=3306
+
 NNS_CORE_SERVER_PORT=9091
+
 NNS_CORE_DB_URL=jdbc:mysql://nns-core-db:3306/nns-core?serverTimezone=Europe/Moscow&useSSL=false
+
 NNS_CORE_MAX_REQUESTS_PER_SECOND=200
+
 PING_SERVER_PORT=9092
+
 SMS_SERVER_PORT=9093
 
 NOTIFICATION_EXPIRY_WINDOW_HOURS=72
 
 PING_ERROR_REPEAT_INTERVAL_SECONDS=30
+
 PING_URL=http://ping-service:9092/api/v1/ping
 
 SMS_SEND_WINDOW=09:00-22:00
+
 SMS_TEXT=Абонент в сети с {$$time}. Вы можете перезвонить ему.
+
 SMS_ERROR_REPEAT_INTERVAL_SECONDS=30
+
 SMS_URL=http://sms-service:9093/api/v1/sendSms
+
 SMS_MAX_REQUESTS_PER_SECOND=300
 
 UI_API_URL=http://localhost:9091/api/v1
+
 UI_SOCKET_URL=http://127.0.0.1:9091/ws
 
 TZ=Europe/Moscow
