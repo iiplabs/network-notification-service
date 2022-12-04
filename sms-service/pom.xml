@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<bucket4j.version>0.6.1</bucket4j.version>
+		<bucket4j.version>0.7.0</bucket4j.version>
 	</properties>
 
 	<dependencies>
