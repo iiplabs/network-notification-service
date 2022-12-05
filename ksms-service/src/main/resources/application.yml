@@ -1,0 +1,8 @@
+debug: false
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+  max-http-header-size: 8KB
+  port: ${KSMS_SERVER_PORT}

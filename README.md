@@ -88,6 +88,10 @@ docker logs --tail 50 --follow --timestamps ping-service
 docker logs --tail 50 --follow --timestamps sms-service
 ```
 
+```bash
+docker logs --tail 50 --follow --timestamps ksms-service
+```
+
 ## Testing
 
 Maven shall be used for unit testing.

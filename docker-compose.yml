@@ -69,6 +69,18 @@ services:
       SMS_SERVER_PORT: ${SMS_SERVER_PORT}
       SMS_MAX_REQUESTS_PER_SECOND: ${SMS_MAX_REQUESTS_PER_SECOND}
 
+  ksms-service:
+    build:
+      context: ./ksms-service/
+    image: ksms-service:latest
+    container_name: ksms-service
+    restart: unless-stopped
+    ports:
+      - '${KSMS_SERVER_PORT}:${KSMS_SERVER_PORT}'
+    environment:
+      TZ: ${TZ}
+      KSMS_SERVER_PORT: ${KSMS_SERVER_PORT}
+
   nns-ui:
     build:
       context: ./nns-ui/
