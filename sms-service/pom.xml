@@ -15,7 +15,7 @@
 	<url>https://www.nns.com/sms</url>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<bucket4j.version>0.7.0</bucket4j.version>
 	</properties>
 

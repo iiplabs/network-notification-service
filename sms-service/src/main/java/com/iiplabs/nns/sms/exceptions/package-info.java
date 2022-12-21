@@ -1,1 +1,1 @@
-package com.iiplabs.nns.sms.controllers;
+package com.iiplabs.nns.sms.exceptions;

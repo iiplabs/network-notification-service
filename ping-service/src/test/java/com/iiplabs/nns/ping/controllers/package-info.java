@@ -1,1 +1,0 @@
-package com.iiplabs.nns.ping.controllers;
