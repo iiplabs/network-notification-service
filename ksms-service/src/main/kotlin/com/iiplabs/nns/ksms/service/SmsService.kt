@@ -5,10 +5,10 @@ import kotlinx.coroutines.delay
 import org.springframework.stereotype.Service
 
 import com.iiplabs.nns.ksms.model.SendMessageRequestDto
-import java.time.Duration.ofSeconds
+import kotlin.time.Duration.Companion.seconds
 
 interface SmsService {
-    fun send(sendMessageRequestDto: SendMessageRequestDto)
+    suspend fun send(sendMessageRequestDto: SendMessageRequestDto)
 }
 
 private val logger = KotlinLogging.logger {}
@@ -20,15 +20,11 @@ class SmsServiceImpl : SmsService {
         private val MAX_EXECUTION_DELAY = 5L
     }
 
-    override fun send(sendMessageRequestDto: SendMessageRequestDto) {
-        logger.info(
-            "Sending SMS to {} that {} is now available",
-            sendMessageRequestDto.destinationPhone,
-            sendMessageRequestDto.sourcePhone
-        );
+    override suspend fun send(sendMessageRequestDto: SendMessageRequestDto) {
+        logger.info { "Sending SMS to ${sendMessageRequestDto.destinationPhone} that ${sendMessageRequestDto.sourcePhone} is now available" }
 
         val randomDelayLong = (1..MAX_EXECUTION_DELAY).shuffled().first().toLong()
-        delay(ofSeconds(randomDelayLong))
+        delay(randomDelayLong.seconds)
 
         logger.info { "Success sending SMS to ${sendMessageRequestDto.destinationPhone}, with delay ${randomDelayLong} seconds" }
     }
