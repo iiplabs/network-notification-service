@@ -80,6 +80,7 @@ services:
     environment:
       TZ: ${TZ}
       KSMS_SERVER_PORT: ${KSMS_SERVER_PORT}
+      SMS_MAX_REQUESTS_PER_SECOND: ${SMS_MAX_REQUESTS_PER_SECOND}
 
   nns-ui:
     build:

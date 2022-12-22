@@ -74,6 +74,24 @@ docker compose up -d
 docker compose down
 ```
 
+### Rebuild an individual service
+
+```bash
+docker compose build ksms-service
+```
+
+### Check the latest build date of a service
+
+```bash
+docker inspect -f '{{.Created}}' ksms-service
+```
+
+### Redeploy an individual service
+
+```bash
+docker compose up --no-deps -d ksms-service
+```
+
 ### Connect to logs of Spring Boot backend
 
 ```bash

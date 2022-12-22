@@ -10,7 +10,9 @@ import com.iiplabs.nns.ksms.model.SendMessageRequestDto
 import com.iiplabs.nns.ksms.model.SendMessageResponseDto
 
 import com.iiplabs.nns.ksms.service.SmsService
+import org.springframework.web.bind.annotation.RequestMapping
 
+@RequestMapping("/api/v1")
 @RestController
 class KsmsController(private val smsService: SmsService) {
 
