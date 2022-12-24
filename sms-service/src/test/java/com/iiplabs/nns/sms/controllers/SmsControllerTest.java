@@ -58,7 +58,7 @@ public class SmsControllerTest {
   }
 
   @Test
-  public void whenPaymentControllerInjected_thenNotNull() throws Exception {
+  public void whenSmsControllerInjected_thenNotNull() throws Exception {
     assertThat(smsController).isNotNull();
   }
 
