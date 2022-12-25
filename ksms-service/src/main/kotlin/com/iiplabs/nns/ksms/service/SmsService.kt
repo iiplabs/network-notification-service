@@ -13,7 +13,7 @@ interface SmsService {
 
 private val logger = KotlinLogging.logger {}
 
-@Service
+@Service("smsService")
 class SmsServiceImpl : SmsService {
 
     companion object {

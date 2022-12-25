@@ -10,11 +10,17 @@ import com.iiplabs.nns.ksms.model.SendMessageRequestDto
 import com.iiplabs.nns.ksms.model.SendMessageResponseDto
 
 import com.iiplabs.nns.ksms.service.SmsService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.RequestMapping
 
 @RequestMapping("/api/v1")
 @RestController
-class KsmsController(private val smsService: SmsService) {
+class KsmsController {
+
+    @Qualifier("smsService")
+    @Autowired
+    private lateinit var smsService: SmsService
 
     @PostMapping("/sendSms")
     suspend fun sendSms(@Valid @RequestBody sendMessageRequestDto: SendMessageRequestDto): SendMessageResponseDto {
