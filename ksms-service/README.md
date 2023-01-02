@@ -41,13 +41,13 @@ If the incoming request is found as not valid, the service responds with HTTP st
   }
 }
 
-### Connect to the service logs
+## Connect to the service logs
 
 ```bash
 docker logs --tail 50 --follow --timestamps ksms-service
 ```
 
-### Testing
+## Testing
 
 ```bash
 mvn test

@@ -9,7 +9,7 @@ End-points:
 Example of the request body:
 
 {
-  "msisdnB": "79031112233", 
+  "msisdnB": "79031112233",
   "msisdnA": "79063332211"
 }
 
@@ -21,9 +21,9 @@ The service accepts the incoming request for checking and immediately responds w
 
 The service throttles the number of incoming HTTP requests to max 500 per second. When the number of HTTP requests exceed the maximum, the service shall respond with HTTP status 429 and the following body.
 
-{ 
-  "status": 429, 
-  "error": "Too Many Requests", 
+{
+  "status": 429,
+  "error": "Too Many Requests",
   "message": "Too Many Requests"
 }
 
@@ -40,13 +40,13 @@ If the incoming request is found as not valid, the service responds with HTTP st
   }
 }
 
-### Connect to the service logs
+## Connect to the service logs
 
 ```bash
 docker logs --tail 50 --follow --timestamps nns-core
 ```
 
-### Testing
+## Testing
 
 ```bash
 mvn test
