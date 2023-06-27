@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.iiplabs.ksms</groupId>
@@ -16,10 +16,10 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<kotlin.version>1.7.21</kotlin.version>
-		<logging.version>3.0.4</logging.version>
-		<mockk.version>4.0.0</mockk.version>
-		<validator.version>7.0.5.Final</validator.version>
+		<kotlin.version>1.8.22</kotlin.version>
+		<logging.version>3.0.5</logging.version>
+		<mockk.version>4.0.2</mockk.version>
+		<validator.version>8.0.1.Final</validator.version>
 	</properties>
 
 	<dependencies>
@@ -97,10 +97,10 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-		        	<layers>
-        		  		<enabled>true</enabled>
-		        	</layers>
-    			</configuration>
+		      <layers>
+        		<enabled>true</enabled>
+		      </layers>
+    		</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
@@ -123,4 +123,70 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+				<build.profile.id>dev</build.profile.id>
+        <spring.profiles.active>dev</spring.profiles.active>
+      </properties>
+      <build>
+        <filters>
+          <filter>src/main/resources/application.yml</filter>
+        </filters>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+    <profile>
+      <id>test</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+				<build.profile.id>test</build.profile.id>
+        <spring.profiles.active>test</spring.profiles.active>
+      </properties>
+      <build>
+        <filters>
+          <filter>src/main/resources/application.yml</filter>
+        </filters>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+				<build.profile.id>prod</build.profile.id>
+        <spring.profiles.active>prod</spring.profiles.active>
+      </properties>
+      <build>
+        <filters>
+          <filter>src/main/resources/application.yml</filter>
+        </filters>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+	</profiles>
 </project>

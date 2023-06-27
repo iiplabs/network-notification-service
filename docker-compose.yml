@@ -72,7 +72,9 @@ services:
   ksms-service:
     build:
       context: ./ksms-service/
-    image: ksms-service:latest
+      args:
+        PROFILE_NAME: ${BUILD_PROFILE}
+    image: ksms-service:1.0.0-SNAPSHOT
     container_name: ksms-service
     restart: unless-stopped
     ports:
